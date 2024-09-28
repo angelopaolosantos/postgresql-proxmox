@@ -1,0 +1,75 @@
+---
+# file: playbook.yaml
+- name: Install PostgreSQL with GUI on Ubuntu
+  hosts: all
+  become: yes  # Use sudo to install packages
+  vars:
+    postgresql_version: "14"  # Replace with your PostgreSQL version
+    db_user: app1user
+    db_password: app1user
+    db_name: app1
+  tasks:
+    - name: Update apt and install apt-transport-https, ca-certificates, curl, gpg
+      apt:
+        update_cache: yes
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gpg
+          - nfs-common
+          - python3
+          - python3-pip
+          - python3-psycopg2
+          - python3-pexpect
+
+    - name: Install PostgreSQL and related packages
+      apt:
+        name:
+          - postgresql
+          - postgresql-contrib
+        state: present
+
+    - name: Install the public key for the repo
+      shell:
+        cmd: curl -fsSL https://www.pgadmin.org/static/packages_pgadmin_org.pub | gpg --dearmor --yes -o /etc/apt/keyrings/packages-pgadmin-org.gpg
+
+    - name: Create the repository configuration file
+      shell:
+        cmd: echo "deb [signed-by=/etc/apt/keyrings/packages-pgadmin-org.gpg] https://ftp.postgresql.org/pub/pgadmin/pgadmin4/apt/$(lsb_release -cs) pgadmin4 main" | sudo tee /etc/apt/sources.list.d/pgadmin4.list
+    
+    - name: Install pgAdmin GUI
+      apt:
+        update_cache: yes
+        name: 
+          - pgadmin4
+          - pgadmin4-web
+        state: present
+
+    - name: Initialize pgAdmin
+      expect:
+        command: /usr/pgadmin4/bin/setup-web.sh
+        responses:
+          '.*Email address:.*': "deviantdevops@gmail.com\n"
+          '.*Password:.*': "password\n"
+          '.*Retype password:.*': "password\n"
+          '.*Do you wish to continue.*': "y\n"
+          '.*Would you like to continue.*': "y\n"
+          '.*Continue.*': "y\n"
+      register: pgAdmin_init
+
+    - name: Show pgAdmin log
+      debug:
+        var: pgAdmin_init
+      
+
+    - name: Set PostgreSQL password for the default user
+      become_user: postgres
+      postgresql_user:
+        name: postgres
+        password: password  # Change this to a secure password
+
+    - name: restart postgresql
+      systemd:
+        name: postgresql
+        state: restarted

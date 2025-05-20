@@ -23,7 +23,7 @@ ansible-playbook -i ./ansible/inventory.yaml ./ansible/playbook.yaml
 Go to http://192.168.254.216/pgadmin4/
 
 ### SSH into container
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i .ssh/my-private-key.pem root@192.168.254.213
+ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i .ssh/my-private-key.pem root@192.168.254.216
 
 ### Download terraform state from backend
 terraform state pull > terraform.tfstate

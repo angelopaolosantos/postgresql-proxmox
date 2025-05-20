@@ -69,7 +69,29 @@
         name: postgres
         password: password  # Change this to a secure password
 
+    - name: add htaccess file
+      copy:
+        dest: "/var/www/html/.htaccess"
+        content: |
+          RewriteEngine on
+          # RewriteCond %{HTTP_HOST} example\.com [NC]
+          RewriteCond %{REQUEST_URI} ^/$
+          RewriteRule ^(.*)$ /pgadmin4/$1 [L]
+
+    - name: Allow override in /var/www # required to use .htaccess
+      shell:
+        cmd: sed -i ':a;N;$!ba;s|<Directory /var/www/>\n[ \t]*Options Indexes FollowSymLinks\n[ \t]*AllowOverride None|<Directory /var/www/>\n\tOptions Indexes FollowSymLinks\n\tAllowOverride All|' /etc/apache2/apache2.conf
+
+    - name: Install mod_rewrite module # required to use .htaccess
+      shell:
+        cmd: a2enmod rewrite
+          
     - name: restart postgresql
       systemd:
         name: postgresql
+        state: restarted
+
+    - name: restart apache2
+      systemd:
+        name: apache2
         state: restarted

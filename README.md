@@ -19,6 +19,9 @@ ansible-inventory -i ./ansible/inventory.yaml --graph --vars
 export ANSIBLE_HOST_KEY_CHECKING=False
 ansible-playbook -i ./ansible/inventory.yaml ./ansible/playbook.yaml
 
+## Access PGAdmin
+Go to http://192.168.254.216/pgadmin4/
+
 ### SSH into container
 ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i .ssh/my-private-key.pem root@192.168.254.213
 
